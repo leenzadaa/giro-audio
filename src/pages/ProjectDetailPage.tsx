@@ -1,12 +1,29 @@
+import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
-import { Heart, Share2, Bookmark, MapPin, Zap, Battery, Gauge, User, Calendar, Eye, MessageSquare } from 'lucide-react'
+import { Heart, Share2, Bookmark, MapPin, Zap, Battery, Gauge, User, Eye, MessageSquare } from 'lucide-react'
 import { MOCK_PROJECTS } from '@/data/mock'
 import { formatRMS, formatNumber } from '@/lib/utils'
 import { ProjectCard } from '@/components/project/ProjectCard'
 
 export function ProjectDetailPage() {
   const { id } = useParams<{ id: string }>()
+  const [liked, setLiked] = useState(false)
+  const [likeCount, setLikeCount] = useState(0)
   const project = MOCK_PROJECTS.find((p) => p.id === id)
+
+  // Initialize like count when project loads
+  if (project && likeCount === 0 && !liked) {
+    setLikeCount(project.likes_count)
+  }
+
+  const handleLike = () => {
+    if (liked) {
+      setLikeCount((prev) => prev - 1)
+    } else {
+      setLikeCount((prev) => prev + 1)
+    }
+    setLiked(!liked)
+  }
 
   if (!project) {
     return (
@@ -56,9 +73,16 @@ export function ProjectDetailPage() {
             </div>
 
             <div className="flex items-center gap-3">
-              <button className="h-11 px-6 bg-primary text-primary-foreground font-bold text-sm uppercase tracking-wider rounded-sm hover:bg-primary/90 transition-colors flex items-center gap-2">
-                <Heart className="w-4 h-4 fill-current" />
-                Curtir ({formatNumber(project.likes_count)})
+              <button
+                onClick={handleLike}
+                className={`h-11 px-6 font-bold text-sm uppercase tracking-wider rounded-sm transition-colors flex items-center gap-2 ${
+                  liked
+                    ? 'bg-pink-600 text-white hover:bg-pink-700'
+                    : 'bg-primary text-primary-foreground hover:bg-primary/90'
+                }`}
+              >
+                <Heart className={`w-4 h-4 ${liked ? 'fill-current' : ''}`} />
+                {liked ? 'Curtido' : 'Curtir'} ({formatNumber(likeCount)})
               </button>
               <button className="h-11 w-11 border border-white/20 bg-black/50 backdrop-blur text-white rounded-sm hover:bg-white/10 transition-colors flex items-center justify-center">
                 <Bookmark className="w-5 h-5" />

@@ -6,9 +6,7 @@ import { cn } from '@/lib/utils'
 const NAV_LINKS = [
   { label: 'Projetos', href: '/projetos' },
   { label: 'Anúncios', href: '/anuncios' },
-  { label: 'Equipamentos', href: '/equipamentos' },
   { label: 'Ranking', href: '/ranking' },
-  { label: 'Calculadoras', href: '/calculadoras' },
 ]
 
 export function Header() {

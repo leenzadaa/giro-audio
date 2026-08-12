@@ -6,7 +6,7 @@ const NAV_ITEMS = [
   { label: 'Início', href: '/', icon: Home },
   { label: 'Explorar', href: '/projetos', icon: Search },
   { label: 'Criar', href: '/criar-projeto', icon: PlusSquare },
-  { label: 'Ranking', href: '/ranking', icon: Trophy },
+  { label: 'Anúncios', href: '/anuncios', icon: Trophy },
   { label: 'Perfil', href: '/perfil/me', icon: User },
 ]
 

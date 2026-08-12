@@ -10,7 +10,6 @@ import { LoginPage } from '@/pages/LoginPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { ListingsPage } from '@/pages/ListingsPage'
 import { RankingPage } from '@/pages/RankingPage'
-import { CalculatorsPage } from '@/pages/CalculatorsPage'
 
 export default function App() {
   return (
@@ -28,7 +27,6 @@ export default function App() {
             <Route path="/cadastrar" element={<RegisterPage />} />
             <Route path="/anuncios" element={<ListingsPage />} />
             <Route path="/ranking" element={<RankingPage />} />
-            <Route path="/calculadoras" element={<CalculatorsPage />} />
           </Routes>
         </main>
         <MobileNav />
