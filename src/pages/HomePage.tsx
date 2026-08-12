@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { Search, Zap, TrendingUp, Users, Wrench } from 'lucide-react'
 import { ProjectCard } from '@/components/project/ProjectCard'
 import { MOCK_PROJECTS, SOUND_TYPES } from '@/data/mock'
@@ -7,6 +8,14 @@ export function HomePage() {
   const featuredProjects = MOCK_PROJECTS.filter((p) => p.is_featured).slice(0, 4)
 
   return (
+    <>
+    <Helmet>
+      <title>GIRO AUDIO | Comunidade de Som Automotivo</title>
+      <meta name="description" content="Descubra carros e projetos de som automotivo de todo o Brasil. Trio Goiano, Nordeste, Treme Lata e mais." />
+      <meta property="og:title" content="GIRO AUDIO | Comunidade de Som Automotivo" />
+      <meta property="og:description" content="Descubra carros e projetos de som automotivo de todo o Brasil. Sua máquina, seu som, sua comunidade." />
+      <meta property="og:type" content="website" />
+    </Helmet>
     <div className="space-y-16 pb-8">
       {/* Hero Section */}
       <section className="relative overflow-hidden border-b border-border">
@@ -18,7 +27,7 @@ export function HomePage() {
               <span className="text-primary">destaque.</span>
             </h1>
             <p className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
-              Descubra carros, equipamentos e projetos de som automotivo de todo o Brasil.
+              Descubra carros e projetos de som automotivo de todo o Brasil.
               Sua máquina, seu som, sua comunidade.
             </p>
           </div>
@@ -30,7 +39,7 @@ export function HomePage() {
               <Search className="ml-4 w-5 h-5 text-muted-foreground" />
               <input
                 type="text"
-                placeholder="Pesquise carro, projeto, equipamento, cidade..."
+                placeholder="Pesquise carro, projeto, cidade..."
                 className="w-full h-14 px-4 bg-transparent text-foreground placeholder:text-muted-foreground focus:outline-none text-base"
               />
               <button
@@ -69,7 +78,7 @@ export function HomePage() {
           {[
             { label: 'Projetos Cadastrados', value: '2.4k+', icon: Zap },
             { label: 'Comunidade Ativa', value: '15k+', icon: Users },
-            { label: 'Equipamentos', value: '850+', icon: Wrench },
+            { label: 'Projetos', value: '1.2K+', icon: Zap },
             { label: 'Visualizações/mês', value: '1.2M', icon: TrendingUp },
           ].map((stat) => (
             <div key={stat.label} className="flex items-center gap-3 justify-center md:justify-start">
@@ -127,7 +136,7 @@ export function HomePage() {
               Mostre o seu projeto para o Brasil
             </h2>
             <p className="text-muted-foreground text-lg">
-              Cadastre seu carro, liste seus equipamentos e entre no ranking dos melhores projetos de som automotivo do país.
+              Cadastre seu carro e entre no ranking dos melhores projetos de som automotivo do país.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center pt-4">
               <Link
@@ -147,5 +156,6 @@ export function HomePage() {
         </div>
       </section>
     </div>
+    </>
   )
 }

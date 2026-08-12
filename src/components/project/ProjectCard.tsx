@@ -1,7 +1,10 @@
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Heart, Eye, Zap, MapPin } from 'lucide-react'
 import type { Project } from '@/types'
 import { formatNumber, formatRMS } from '@/lib/utils'
+import { useProjectLikes } from '@/hooks/useProjectLikes'
+import { useAuth } from '@/contexts/AuthContext'
+import { cn } from '@/lib/utils'
 
 interface ProjectCardProps {
   project: Project
@@ -9,17 +12,36 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project, featured = false }: ProjectCardProps) {
+  const navigate = useNavigate()
+  const { user } = useAuth()
+  const { likesCount, isLiked, toggling, toggleLike } = useProjectLikes(
+    project.id,
+    project.likes_count
+  )
   const coverImage = project.images.find((img) => img.is_cover) || project.images[0]
+
+  const handleLikeClick = (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!user) {
+      navigate('/entrar')
+      return
+    }
+
+    toggleLike()
+  }
 
   return (
     <Link
       to={`/projeto/${project.id}`}
-      className={`group relative bg-card border border-border rounded-sm overflow-hidden hover:border-primary/50 transition-all duration-300 ${
-        featured ? 'col-span-full md:col-span-2 lg:col-span-1' : ''
-      }`}
+      className={cn(
+        "group relative bg-card border border-border rounded-sm overflow-hidden hover:border-primary/50 transition-all duration-300",
+        featured && "col-span-full md:col-span-2 lg:col-span-1"
+      )}
     >
       {/* Image Container */}
-      <div className={`relative overflow-hidden ${featured ? 'aspect-[16/9]' : 'aspect-[4/3]'}`}>
+      <div className={cn("relative overflow-hidden", featured ? "aspect-[16/9]" : "aspect-[4/3]")}>
         <img
           src={coverImage?.url || 'https://images.unsplash.com/photo-1489824904134-897ab2764a9c?w=800&h=500&fit=crop'}
           alt={project.title}
@@ -37,12 +59,19 @@ export function ProjectCard({ project, featured = false }: ProjectCardProps) {
           </span>
         </div>
 
-        {/* Stats Overlay (visible on hover or always on mobile) */}
+        {/* Stats Overlay */}
         <div className="absolute bottom-3 right-3 flex gap-3 text-white/90 text-xs font-medium">
-          <span className="flex items-center gap-1 bg-black/50 backdrop-blur-sm px-2 py-1 rounded-sm">
-            <Heart className="w-3 h-3" />
-            {formatNumber(project.likes_count)}
-          </span>
+          <button
+            onClick={handleLikeClick}
+            disabled={toggling}
+            className={cn(
+              "flex items-center gap-1 bg-black/50 backdrop-blur-sm px-2 py-1 rounded-sm transition-colors",
+              isLiked ? "text-red-500" : "hover:text-red-400"
+            )}
+          >
+            <Heart className={cn("w-3 h-3", isLiked && "fill-current")} />
+            {formatNumber(likesCount)}
+          </button>
           <span className="flex items-center gap-1 bg-black/50 backdrop-blur-sm px-2 py-1 rounded-sm">
             <Eye className="w-3 h-3" />
             {formatNumber(project.views_count)}

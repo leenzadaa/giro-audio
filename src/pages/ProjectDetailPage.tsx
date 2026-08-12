@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { Heart, Share2, Bookmark, MapPin, Zap, Battery, Gauge, User, Eye, MessageSquare } from 'lucide-react'
 import { MOCK_PROJECTS } from '@/data/mock'
 import { formatRMS, formatNumber } from '@/lib/utils'
@@ -41,6 +42,15 @@ export function ProjectDetailPage() {
   ).slice(0, 3)
 
   return (
+    <>
+    <Helmet>
+      <title>{project.title} | GIRO AUDIO</title>
+      <meta name="description" content={project.description || `Projeto de som automotivo ${project.sound_type} em ${project.city}/${project.state}`} />
+      <meta property="og:title" content={project.title} />
+      <meta property="og:description" content={project.description || `Projeto de som automotivo ${project.sound_type} em ${project.city}/${project.state}`} />
+      <meta property="og:image" content={project.images[0]?.url} />
+      <meta property="og:type" content="article" />
+    </Helmet>
     <div className="space-y-8 pb-12">
       {/* Hero Image Gallery */}
       <div className="relative h-[40vh] md:h-[50vh] lg:h-[60vh] bg-card overflow-hidden">
@@ -133,8 +143,8 @@ export function ProjectDetailPage() {
                 <span className="font-bold text-foreground">{project.vehicle_type}</span>
               </div>
               <div>
-                <span className="text-xs text-muted-foreground uppercase tracking-wider block mb-1">Equipamentos</span>
-                <span className="font-bold text-foreground">{project.equipment_count} itens</span>
+                <span className="text-xs text-muted-foreground uppercase tracking-wider block mb-1">Potência RMS</span>
+                <span className="font-bold text-foreground">{formatRMS(project.rms_power)}</span>
               </div>
               <div>
                 <span className="text-xs text-muted-foreground uppercase tracking-wider block mb-1">Publicado em</span>
@@ -275,5 +285,6 @@ export function ProjectDetailPage() {
         </aside>
       </div>
     </div>
+    </>
   )
 }

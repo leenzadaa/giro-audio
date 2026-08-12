@@ -1,7 +1,8 @@
 import { Link, useNavigate } from 'react-router-dom'
-import { Search, Menu, X, User, PlusCircle } from 'lucide-react'
+import { Search, Menu, X, User, PlusCircle, LogOut } from 'lucide-react'
 import { useState } from 'react'
 import { cn } from '@/lib/utils'
+import { useAuth } from '@/contexts/AuthContext'
 
 const NAV_LINKS = [
   { label: 'Projetos', href: '/projetos' },
@@ -13,6 +14,7 @@ export function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const navigate = useNavigate()
+  const { user, signOut } = useAuth()
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
@@ -54,7 +56,7 @@ export function Header() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <input
             type="text"
-            placeholder="Buscar projetos, carros, equipamentos..."
+            placeholder="Buscar projetos, carros, cidade..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full h-9 pl-9 pr-4 bg-secondary border border-border rounded-sm text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary transition-all"
@@ -70,13 +72,32 @@ export function Header() {
             <PlusCircle className="w-4 h-4" />
             <span>Criar Projeto</span>
           </Link>
-          <Link
-            to="/entrar"
-            className="hidden sm:flex items-center gap-2 h-9 px-4 border border-border text-foreground text-sm font-medium rounded-sm hover:bg-secondary transition-colors"
-          >
-            <User className="w-4 h-4" />
-            <span>Entrar</span>
-          </Link>
+          {user ? (
+            <div className="hidden sm:flex items-center gap-2">
+              <Link
+                to="/perfil/me"
+                className="flex items-center gap-2 h-9 px-4 text-foreground text-sm font-medium rounded-sm hover:bg-secondary transition-colors"
+              >
+                <User className="w-4 h-4" />
+                <span>Meu Perfil</span>
+              </Link>
+              <button
+                onClick={() => signOut()}
+                className="flex items-center gap-2 h-9 px-4 border border-border text-muted-foreground text-sm font-medium rounded-sm hover:text-foreground hover:bg-secondary transition-colors"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Sair</span>
+              </button>
+            </div>
+          ) : (
+            <Link
+              to="/entrar"
+              className="hidden sm:flex items-center gap-2 h-9 px-4 border border-border text-foreground text-sm font-medium rounded-sm hover:bg-secondary transition-colors"
+            >
+              <User className="w-4 h-4" />
+              <span>Entrar</span>
+            </Link>
+          )}
 
           {/* Mobile Menu Toggle */}
           <button
@@ -129,14 +150,34 @@ export function Header() {
                 <PlusCircle className="w-4 h-4" />
                 Criar Projeto
               </Link>
-              <Link
-                to="/entrar"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 h-11 w-full border border-border text-foreground font-medium rounded-sm hover:bg-secondary transition-colors"
-              >
-                <User className="w-4 h-4" />
-                Entrar na Conta
-              </Link>
+              {user ? (
+                <>
+                  <Link
+                    to="/perfil/me"
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-center gap-2 h-11 w-full border border-border text-foreground font-medium rounded-sm hover:bg-secondary transition-colors"
+                  >
+                    <User className="w-4 h-4" />
+                    Meu Perfil
+                  </Link>
+                  <button
+                    onClick={() => { signOut(); setIsMobileMenuOpen(false) }}
+                    className="flex items-center justify-center gap-2 h-11 w-full border border-border text-muted-foreground font-medium rounded-sm hover:text-foreground hover:bg-secondary transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    Sair
+                  </button>
+                </>
+              ) : (
+                <Link
+                  to="/entrar"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2 h-11 w-full border border-border text-foreground font-medium rounded-sm hover:bg-secondary transition-colors"
+                >
+                  <User className="w-4 h-4" />
+                  Entrar na Conta
+                </Link>
+              )}
             </div>
           </div>
         </div>

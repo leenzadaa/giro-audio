@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useSearchParams, Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { Search, SlidersHorizontal, X, MapPin, Tag, Heart } from 'lucide-react'
 import { MOCK_LISTINGS } from '@/data/mock'
 import { cn } from '@/lib/utils'
@@ -59,13 +60,21 @@ export function ListingsPage() {
     new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value)
 
   return (
+    <>
+    <Helmet>
+      <title>Marketplace | GIRO AUDIO</title>
+      <meta name="description" content="Compre e venda carros com som e peças automotivas. Encontre os melhores negócios da comunidade." />
+      <meta property="og:title" content="Marketplace | GIRO AUDIO" />
+      <meta property="og:description" content="Compre e venda carros com som e peças automotivas no maior marketplace de som automotivo do Brasil." />
+      <meta property="og:type" content="website" />
+    </Helmet>
     <div className="container mx-auto px-4 py-8 space-y-8">
       <div className="space-y-4">
         <h1 className="text-3xl md:text-4xl font-black text-foreground tracking-tight">
           Marketplace
         </h1>
         <p className="text-muted-foreground">
-          Compre e venda carros com som, equipamentos e peças automotivas
+          Compre e venda carros com som e peças automotivas
         </p>
       </div>
 
@@ -185,5 +194,6 @@ export function ListingsPage() {
         </div>
       )}
     </div>
+    </>
   )
 }

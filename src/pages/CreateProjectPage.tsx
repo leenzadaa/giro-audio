@@ -1,20 +1,30 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Upload, X, Plus, ChevronRight, ChevronLeft, Check } from 'lucide-react'
+import { Upload, X, ChevronRight, ChevronLeft, Check, Image as ImageIcon, Loader2 } from 'lucide-react'
 import { SOUND_TYPES, VEHICLE_TYPES } from '@/data/mock'
 import { cn } from '@/lib/utils'
+import { useUploadImage } from '@/hooks/useUploadImage'
+import { useAuth } from '@/contexts/AuthContext'
+import { supabase } from '@/lib/supabase'
 
 const STEPS = [
   { id: 1, title: 'Veículo' },
   { id: 2, title: 'Tipo de Som' },
-  { id: 3, title: 'Equipamentos' },
+  { id: 3, title: 'Potência e Elétrica' },
   { id: 4, title: 'Fotos' },
   { id: 5, title: 'Detalhes' },
 ]
 
 export function CreateProjectPage() {
   const navigate = useNavigate()
+  const { user } = useAuth()
+  const { uploadMultiple, uploading } = useUploadImage()
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [currentStep, setCurrentStep] = useState(1)
+  const [images, setImages] = useState<File[]>([])
+  const [imagePreviews, setImagePreviews] = useState<string[]>([])
+  const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     car_make: '',
     car_model: '',
@@ -42,11 +52,64 @@ export function CreateProjectPage() {
     if (currentStep > 1) setCurrentStep(currentStep - 1)
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleImageSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    const validFiles = files.filter((f) => f.type.startsWith('image/'))
+    const remaining = 10 - images.length
+    const toAdd = validFiles.slice(0, remaining)
+
+    setImages((prev) => [...prev, ...toAdd])
+    toAdd.forEach((file) => {
+      const reader = new FileReader()
+      reader.onloadend = () => {
+        setImagePreviews((prev) => [...prev, reader.result as string])
+      }
+      reader.readAsDataURL(file)
+    })
+
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  const removeImage = (index: number) => {
+    setImages((prev) => prev.filter((_, i) => i !== index))
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index))
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In a real app, this would submit to Supabase
-    alert('Projeto cadastrado com sucesso! (Demo)')
-    navigate('/projetos')
+    if (!user) return
+
+    setSubmitting(true)
+    setSubmitError(null)
+
+    try {
+      const imageUrls = images.length > 0
+        ? await uploadMultiple(images, 'project-images')
+        : []
+
+      const { error } = await supabase.from('projects').insert({
+        user_id: user.id,
+        title: formData.title,
+        description: formData.description,
+        sound_type: formData.sound_type || null,
+        vehicle_type: formData.vehicle_type || null,
+        vehicle_model: `${formData.car_make} ${formData.car_model}`.trim(),
+        vehicle_year: formData.car_year ? parseInt(formData.car_year) : null,
+        rms_power: formData.rms_power ? parseFloat(formData.rms_power) : null,
+        images: imageUrls,
+      })
+
+      if (error) {
+        setSubmitError(error.message)
+        setSubmitting(false)
+        return
+      }
+
+      navigate('/projetos')
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Erro desconhecido ao publicar projeto')
+      setSubmitting(false)
+    }
   }
 
   return (
@@ -86,6 +149,12 @@ export function CreateProjectPage() {
       </div>
 
       <form onSubmit={handleSubmit} className="bg-card border border-border rounded-sm p-6 md:p-8 space-y-8">
+        {submitError && (
+          <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-sm text-destructive text-sm font-medium">
+            {submitError}
+          </div>
+        )}
+
         {/* Step 1: Vehicle Info */}
         {currentStep === 1 && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
@@ -238,11 +307,24 @@ export function CreateProjectPage() {
           </div>
         )}
 
-        {/* Step 4: Photos Placeholder */}
+        {/* Step 4: Photos with Real Upload */}
         {currentStep === 4 && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <h2 className="text-xl font-bold text-foreground">Fotos do Projeto</h2>
-            <div className="border-2 border-dashed border-border rounded-sm p-12 text-center space-y-4 hover:border-primary/50 hover:bg-secondary/50 transition-colors cursor-pointer group">
+
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              onChange={handleImageSelect}
+              className="hidden"
+            />
+
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="border-2 border-dashed border-border rounded-sm p-12 text-center space-y-4 hover:border-primary/50 hover:bg-secondary/50 transition-colors cursor-pointer group"
+            >
               <div className="w-16 h-16 bg-secondary rounded-full flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                 <Upload className="w-8 h-8 text-muted-foreground group-hover:text-primary" />
               </div>
@@ -251,9 +333,40 @@ export function CreateProjectPage() {
                 <p className="text-sm text-muted-foreground mt-1">JPG, PNG até 5MB cada. Máximo 10 fotos.</p>
               </div>
             </div>
-            <p className="text-xs text-muted-foreground text-center">
-              (Upload simulado nesta versão demo)
-            </p>
+
+            {imagePreviews.length > 0 && (
+              <div className="grid grid-cols-3 sm:grid-cols-4 gap-3">
+                {imagePreviews.map((preview, index) => (
+                  <div key={index} className="relative aspect-square rounded-sm overflow-hidden border border-border group">
+                    <img src={preview} alt={`Preview ${index + 1}`} className="w-full h-full object-cover" />
+                    <button
+                      type="button"
+                      onClick={() => removeImage(index)}
+                      className="absolute top-1 right-1 w-6 h-6 bg-black/70 rounded-full flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))}
+                {images.length < 10 && (
+                  <button
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="aspect-square border-2 border-dashed border-border rounded-sm flex flex-col items-center justify-center gap-2 text-muted-foreground hover:border-primary/50 hover:text-foreground transition-colors"
+                  >
+                    <ImageIcon className="w-6 h-6" />
+                    <span className="text-xs font-medium">Adicionar</span>
+                  </button>
+                )}
+              </div>
+            )}
+
+            {uploading && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                <span>Enviando imagens...</span>
+              </div>
+            )}
           </div>
         )}
 
@@ -301,6 +414,9 @@ export function CreateProjectPage() {
 
                 <span className="text-muted-foreground">Potência:</span>
                 <span className="font-medium text-primary text-right">{formData.rms_power ? `${formData.rms_power}W RMS` : '-'}</span>
+
+                <span className="text-muted-foreground">Fotos:</span>
+                <span className="font-medium text-foreground text-right">{images.length} foto{images.length !== 1 ? 's' : ''}</span>
               </div>
             </div>
           </div>
@@ -335,10 +451,20 @@ export function CreateProjectPage() {
           ) : (
             <button
               type="submit"
-              className="h-11 px-8 bg-green-600 text-white text-sm font-bold uppercase tracking-wider rounded-sm hover:bg-green-700 transition-colors flex items-center gap-2"
+              disabled={submitting || uploading}
+              className="h-11 px-8 bg-green-600 text-white text-sm font-bold uppercase tracking-wider rounded-sm hover:bg-green-700 transition-colors flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <Check className="w-4 h-4" />
-              Publicar Projeto
+              {submitting ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Publicando...
+                </>
+              ) : (
+                <>
+                  <Check className="w-4 h-4" />
+                  Publicar Projeto
+                </>
+              )}
             </button>
           )}
         </div>

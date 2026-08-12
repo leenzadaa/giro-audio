@@ -1,10 +1,14 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Mail, Lock, User, MapPin, Eye, EyeOff, Zap } from 'lucide-react'
+import { Mail, Lock, User, MapPin, Eye, EyeOff, Zap, AlertCircle } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 export function RegisterPage() {
   const navigate = useNavigate()
+  const { signUp } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
   const [formData, setFormData] = useState({
     full_name: '',
     username: '',
@@ -18,9 +22,24 @@ export function RegisterPage() {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    alert('Conta criada com sucesso! (Demo)')
+    setError(null)
+    setLoading(true)
+
+    const { error } = await signUp(formData.email, formData.password)
+
+    if (error) {
+      setError(error.message === 'User already registered'
+        ? 'Este email já está cadastrado.'
+        : error.message)
+      setLoading(false)
+      return
+    }
+
+    // TODO: Salvar perfil completo (nome, username, cidade, estado) via Supabase
+    // após confirmação de email ou em trigger no banco de dados.
+    // Por enquanto, redireciona para o perfil.
     navigate('/perfil/me')
   }
 
@@ -42,6 +61,13 @@ export function RegisterPage() {
 
         {/* Register Form */}
         <form onSubmit={handleSubmit} className="bg-card border border-border rounded-sm p-6 md:p-8 space-y-5">
+          {error && (
+            <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-sm text-destructive text-sm">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Nome Completo</label>
@@ -144,9 +170,10 @@ export function RegisterPage() {
 
           <button
             type="submit"
-            className="w-full h-11 bg-primary text-primary-foreground font-bold text-sm uppercase tracking-wider rounded-sm hover:bg-primary/90 transition-colors mt-4"
+            disabled={loading}
+            className="w-full h-11 bg-primary text-primary-foreground font-bold text-sm uppercase tracking-wider rounded-sm hover:bg-primary/90 transition-colors mt-4 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Criar Minha Conta
+            {loading ? 'Criando conta...' : 'Criar Minha Conta'}
           </button>
         </form>
 

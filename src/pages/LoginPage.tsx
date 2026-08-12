@@ -1,17 +1,32 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Mail, Lock, Eye, EyeOff, Zap } from 'lucide-react'
+import { Mail, Lock, Eye, EyeOff, Zap, AlertCircle } from 'lucide-react'
+import { useAuth } from '@/contexts/AuthContext'
 
 export function LoginPage() {
   const navigate = useNavigate()
+  const { signIn } = useAuth()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [error, setError] = useState<string | null>(null)
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Demo login - redirect to profile
-    alert('Login realizado com sucesso! (Demo)')
+    setError(null)
+    setLoading(true)
+
+    const { error } = await signIn(email, password)
+
+    if (error) {
+      setError(error.message === 'Invalid login credentials'
+        ? 'Email ou senha incorretos.'
+        : error.message)
+      setLoading(false)
+      return
+    }
+
     navigate('/perfil/me')
   }
 
@@ -33,6 +48,13 @@ export function LoginPage() {
 
         {/* Login Form */}
         <form onSubmit={handleSubmit} className="bg-card border border-border rounded-sm p-6 md:p-8 space-y-6">
+          {error && (
+            <div className="flex items-center gap-2 p-3 bg-destructive/10 border border-destructive/20 rounded-sm text-destructive text-sm">
+              <AlertCircle className="w-4 h-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
+
           <div className="space-y-4">
             <div className="space-y-2">
               <label className="text-sm font-medium text-foreground">Email</label>
@@ -84,9 +106,10 @@ export function LoginPage() {
 
           <button
             type="submit"
-            className="w-full h-11 bg-primary text-primary-foreground font-bold text-sm uppercase tracking-wider rounded-sm hover:bg-primary/90 transition-colors"
+            disabled={loading}
+            className="w-full h-11 bg-primary text-primary-foreground font-bold text-sm uppercase tracking-wider rounded-sm hover:bg-primary/90 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            Entrar na Conta
+            {loading ? 'Entrando...' : 'Entrar na Conta'}
           </button>
         </form>
 

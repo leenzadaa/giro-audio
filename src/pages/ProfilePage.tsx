@@ -1,4 +1,5 @@
 import { useParams, Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { MapPin, Calendar, Heart, Users, Zap, Settings } from 'lucide-react'
 import { MOCK_PROFILES, MOCK_PROJECTS } from '@/data/mock'
 import { ProjectCard } from '@/components/project/ProjectCard'
@@ -15,6 +16,15 @@ export function ProfilePage() {
   const userProjects = MOCK_PROJECTS.filter((p) => p.user_id === profile.user_id)
 
   return (
+    <>
+    <Helmet>
+      <title>{profile.full_name} (@{profile.username}) | GIRO AUDIO</title>
+      <meta name="description" content={profile.bio || `Perfil de ${profile.full_name} na comunidade GIRO AUDIO`} />
+      <meta property="og:title" content={`${profile.full_name} | GIRO AUDIO`} />
+      <meta property="og:description" content={profile.bio || `Perfil de ${profile.full_name} na comunidade GIRO AUDIO`} />
+      <meta property="og:image" content={profile.avatar_url} />
+      <meta property="og:type" content="profile" />
+    </Helmet>
     <div className="space-y-8 pb-12">
       {/* Profile Header */}
       <div className="bg-card border-b border-border">
@@ -83,7 +93,7 @@ export function ProfilePage() {
       {/* Content Tabs */}
       <div className="container mx-auto px-4 space-y-6">
         <div className="flex items-center gap-1 border-b border-border overflow-x-auto">
-          {['Projetos', 'Anúncios', 'Equipamentos', 'Curtidas'].map((tab, idx) => (
+          {['Projetos', 'Anúncios', 'Curtidas'].map((tab, idx) => (
             <button
               key={tab}
               className={`px-6 py-3 text-sm font-bold uppercase tracking-wider border-b-2 transition-colors whitespace-nowrap ${
@@ -115,5 +125,6 @@ export function ProfilePage() {
         )}
       </div>
     </div>
+    </>
   )
 }

@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { Trophy, Flame, Zap, Camera, Sparkles, MapPin, Heart } from 'lucide-react'
 import { MOCK_PROJECTS } from '@/data/mock'
 import { formatRMS, formatNumber, cn } from '@/lib/utils'
@@ -35,6 +36,14 @@ export function RankingPage() {
   const activeConfig = RANKING_CATEGORIES.find((c) => c.id === activeCategory)!
 
   return (
+    <>
+    <Helmet>
+      <title>Ranking | GIRO AUDIO</title>
+      <meta name="description" content="Os melhores projetos de som automotivo do Brasil. Ranking por curtidas, potência e mais." />
+      <meta property="og:title" content="Ranking | GIRO AUDIO" />
+      <meta property="og:description" content="Descubra os projetos de som automotivo mais curtidos e potentes do Brasil." />
+      <meta property="og:type" content="website" />
+    </Helmet>
     <div className="container mx-auto px-4 py-8 space-y-10">
       {/* Header */}
       <div className="text-center space-y-4 max-w-2xl mx-auto">
@@ -188,5 +197,6 @@ export function RankingPage() {
         </div>
       </div>
     </div>
+    </>
   )
 }

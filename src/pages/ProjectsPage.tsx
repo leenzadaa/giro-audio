@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { Helmet } from 'react-helmet-async'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { ProjectCard } from '@/components/project/ProjectCard'
 import { MOCK_PROJECTS, SOUND_TYPES, VEHICLE_TYPES } from '@/data/mock'
@@ -70,6 +71,14 @@ export function ProjectsPage() {
   const hasActiveFilters = typeFilter || vehicleFilter || query
 
   return (
+    <>
+    <Helmet>
+      <title>Explorar Projetos | GIRO AUDIO</title>
+      <meta name="description" content="Explore projetos de som automotivo de todo o Brasil. Filtre por tipo de som, veículo e potência." />
+      <meta property="og:title" content="Explorar Projetos | GIRO AUDIO" />
+      <meta property="og:description" content="Descubra os melhores projetos de som automotivo do Brasil." />
+      <meta property="og:type" content="website" />
+    </Helmet>
     <div className="container mx-auto px-4 py-8 space-y-8">
       {/* Page Header */}
       <div className="space-y-4">
@@ -239,5 +248,6 @@ export function ProjectsPage() {
         </div>
       )}
     </div>
+    </>
   )
 }

@@ -1,4 +1,6 @@
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
+import { HelmetProvider } from 'react-helmet-async'
+import { AuthProvider } from '@/contexts/AuthContext'
 import { Header } from '@/components/layout/Header'
 import { MobileNav } from '@/components/layout/MobileNav'
 import { HomePage } from '@/pages/HomePage'
@@ -10,10 +12,14 @@ import { LoginPage } from '@/pages/LoginPage'
 import { RegisterPage } from '@/pages/RegisterPage'
 import { ListingsPage } from '@/pages/ListingsPage'
 import { RankingPage } from '@/pages/RankingPage'
+import { AdminDashboardPage } from '@/pages/AdminDashboardPage'
+import { ProtectedRoute } from '@/components/ProtectedRoute'
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <HelmetProvider>
+    <AuthProvider>
+      <BrowserRouter>
       <div className="min-h-screen bg-background text-foreground flex flex-col">
         <Header />
         <main className="flex-1 pb-20 md:pb-0">
@@ -21,16 +27,19 @@ export default function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/projetos" element={<ProjectsPage />} />
             <Route path="/projeto/:id" element={<ProjectDetailPage />} />
-            <Route path="/criar-projeto" element={<CreateProjectPage />} />
+            <Route path="/criar-projeto" element={<ProtectedRoute><CreateProjectPage /></ProtectedRoute>} />
             <Route path="/perfil/:username" element={<ProfilePage />} />
             <Route path="/entrar" element={<LoginPage />} />
             <Route path="/cadastrar" element={<RegisterPage />} />
             <Route path="/anuncios" element={<ListingsPage />} />
             <Route path="/ranking" element={<RankingPage />} />
+            <Route path="/admin" element={<ProtectedRoute><AdminDashboardPage /></ProtectedRoute>} />
           </Routes>
         </main>
         <MobileNav />
       </div>
     </BrowserRouter>
+    </AuthProvider>
+    </HelmetProvider>
   )
 }
