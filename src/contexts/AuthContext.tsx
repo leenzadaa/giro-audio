@@ -19,32 +19,64 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    let cancelled = false
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-    })
+    async function initAuth() {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        if (!cancelled && !error) {
+          setSession(session)
+          setUser(session?.user ?? null)
+        }
+      } catch {
+        // Supabase not configured or unreachable — app still renders without auth
+      } finally {
+        if (!cancelled) setLoading(false)
+      }
+    }
 
-    return () => subscription.unsubscribe()
+    initAuth()
+
+    try {
+      const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+        if (!cancelled) {
+          setSession(session)
+          setUser(session?.user ?? null)
+        }
+      })
+      return () => {
+        cancelled = true
+        subscription.unsubscribe()
+      }
+    } catch {
+      return () => { cancelled = true }
+    }
   }, [])
 
   async function signIn(email: string, password: string) {
-    const { error } = await supabase.auth.signInWithPassword({ email, password })
-    return { error: error as Error | null }
+    try {
+      const { error } = await supabase.auth.signInWithPassword({ email, password })
+      return { error: error as Error | null }
+    } catch (err) {
+      return { error: err instanceof Error ? err : new Error('Erro ao fazer login') }
+    }
   }
 
   async function signUp(email: string, password: string) {
-    const { error } = await supabase.auth.signUp({ email, password })
-    return { error: error as Error | null }
+    try {
+      const { error } = await supabase.auth.signUp({ email, password })
+      return { error: error as Error | null }
+    } catch (err) {
+      return { error: err instanceof Error ? err : new Error('Erro ao criar conta') }
+    }
   }
 
   async function signOut() {
-    await supabase.auth.signOut()
+    try {
+      await supabase.auth.signOut()
+    } catch {
+      // Silent fail if Supabase is not configured
+    }
   }
 
   return (
