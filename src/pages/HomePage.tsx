@@ -49,10 +49,11 @@ export function HomePage() {
     loadStats()
   }, [])
 
-  const formatStat = (value: number): string => {
+  const formatStat = (value: number | null | undefined): string => {
+    if (value == null || isNaN(value)) return '0'
     if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
     if (value >= 1000) return `${(value / 1000).toFixed(1)}k+`
-    return value.toString()
+    return String(value)
   }
 
   return (
