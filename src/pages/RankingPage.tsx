@@ -8,9 +8,6 @@ import { formatRMS, formatNumber, cn } from '@/lib/utils'
 const RANKING_CATEGORIES = [
   { id: 'likes', label: 'Mais Curtidos', icon: Heart, color: 'text-pink-500' },
   { id: 'popular', label: 'Mais Populares', icon: Flame, color: 'text-orange-500' },
-  { id: 'power', label: 'Maior Potência', icon: Zap, color: 'text-yellow-400' },
-  { id: 'best', label: 'Melhor Projeto', icon: Camera, color: 'text-blue-500' },
-  { id: 'new', label: 'Novos Projetos', icon: Sparkles, color: 'text-green-500' },
 ] as const
 
 type CategoryId = typeof RANKING_CATEGORIES[number]['id']
@@ -24,10 +21,6 @@ export function RankingPage() {
         return b.likes_count - a.likes_count
       case 'popular':
         return b.views_count - a.views_count
-      case 'power':
-        return b.rms_power - a.rms_power
-      case 'new':
-        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
       default:
         return b.likes_count - a.likes_count
     }

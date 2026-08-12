@@ -182,6 +182,12 @@ create trigger on_project_like_change
 
 alter table public.profiles add column if not exists role text default 'user' check (role in ('user', 'admin'));
 
+-- Username change cooldown (7 days)
+alter table public.profiles add column if not exists last_username_change timestamptz default now();
+
+-- Contact info for listings
+alter table public.listings add column if not exists contact_info text;
+
 create policy "Users can read own role"
   on public.profiles for select using (auth.uid() = id or role = 'admin');
 

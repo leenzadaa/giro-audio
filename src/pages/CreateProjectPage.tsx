@@ -10,9 +10,8 @@ import { supabase } from '@/lib/supabase'
 const STEPS = [
   { id: 1, title: 'Veículo' },
   { id: 2, title: 'Tipo de Som' },
-  { id: 3, title: 'Potência e Elétrica' },
-  { id: 4, title: 'Fotos' },
-  { id: 5, title: 'Detalhes' },
+  { id: 3, title: 'Fotos' },
+  { id: 4, title: 'Detalhes' },
 ]
 
 export function CreateProjectPage() {
@@ -87,7 +86,7 @@ export function CreateProjectPage() {
         ? await uploadMultiple(images, 'project-images')
         : []
 
-      const { error } = await supabase.from('projects').insert({
+      const { data: projectData, error } = await supabase.from('projects').insert({
         user_id: user.id,
         title: formData.title,
         description: formData.description,
@@ -97,12 +96,25 @@ export function CreateProjectPage() {
         vehicle_year: formData.car_year ? parseInt(formData.car_year) : null,
         rms_power: formData.rms_power ? parseFloat(formData.rms_power) : null,
         images: imageUrls,
-      })
+      }).select('id').single()
 
       if (error) {
         setSubmitError(error.message)
         setSubmitting(false)
         return
+      }
+
+      // Auto-create listing from project
+      if (projectData) {
+        await supabase.from('listings').insert({
+          user_id: user.id,
+          title: formData.title,
+          description: formData.description,
+          category: 'Carros com Som',
+          condition: 'Usado',
+          images: imageUrls,
+          is_active: true,
+        })
       }
 
       navigate('/projetos')
@@ -259,56 +271,8 @@ export function CreateProjectPage() {
           </div>
         )}
 
-        {/* Step 3: Equipment & Power */}
+        {/* Step 3: Photos with Real Upload */}
         {currentStep === 3 && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-            <h2 className="text-xl font-bold text-foreground">Potência e Elétrica</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Potência RMS Total</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={formData.rms_power}
-                    onChange={(e) => updateField('rms_power', e.target.value)}
-                    className="w-full h-11 pl-4 pr-10 bg-background border border-border rounded-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">W</span>
-                </div>
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Qtd. Baterias</label>
-                <input
-                  type="number"
-                  placeholder="0"
-                  value={formData.battery_count}
-                  onChange={(e) => updateField('battery_count', e.target.value)}
-                  className="w-full h-11 px-4 bg-background border border-border rounded-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                />
-              </div>
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-foreground">Alternador (Amperes)</label>
-                <div className="relative">
-                  <input
-                    type="number"
-                    placeholder="0"
-                    value={formData.alternator_amps}
-                    onChange={(e) => updateField('alternator_amps', e.target.value)}
-                    className="w-full h-11 pl-4 pr-10 bg-background border border-border rounded-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-1 focus:ring-primary"
-                  />
-                  <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-muted-foreground">A</span>
-                </div>
-              </div>
-            </div>
-            <p className="text-xs text-muted-foreground pt-2">
-              Você poderá detalhar cada equipamento (marca/modelo) após publicar, na edição do projeto.
-            </p>
-          </div>
-        )}
-
-        {/* Step 4: Photos with Real Upload */}
-        {currentStep === 4 && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <h2 className="text-xl font-bold text-foreground">Fotos do Projeto</h2>
 
@@ -370,8 +334,8 @@ export function CreateProjectPage() {
           </div>
         )}
 
-        {/* Step 5: Details & Review */}
-        {currentStep === 5 && (
+        {/* Step 4: Details & Review */}
+        {currentStep === 4 && (
           <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <h2 className="text-xl font-bold text-foreground">Título e Descrição</h2>
             <div className="space-y-4">
