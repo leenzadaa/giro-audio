@@ -25,9 +25,9 @@ export interface Profile {
   likes_received: number
 }
 
-export type SoundType = 'SPL' | 'Trio' | 'Pancadão' | 'SQ' | 'Hi-Fi' | 'Misto'
+export type SoundType = 'Trio Goiano' | 'Nordeste' | 'Treme Lata'
 
-export type VehicleType = 'Carro' | 'Pickup' | 'SUV' | 'Van' | 'Moto'
+export type VehicleType = 'SUV' | 'Sedan' | 'Hatch' | 'Picape' | 'Esportivo'
 
 export interface Project {
   id: string

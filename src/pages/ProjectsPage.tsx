@@ -2,7 +2,7 @@ import { useState, useMemo } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Search, SlidersHorizontal, X } from 'lucide-react'
 import { ProjectCard } from '@/components/project/ProjectCard'
-import { MOCK_PROJECTS, SOUND_TYPES, POWER_RANGES, VEHICLE_TYPES } from '@/data/mock'
+import { MOCK_PROJECTS, SOUND_TYPES, VEHICLE_TYPES } from '@/data/mock'
 import { cn } from '@/lib/utils'
 
 export function ProjectsPage() {
@@ -11,7 +11,6 @@ export function ProjectsPage() {
 
   const query = searchParams.get('q') || ''
   const typeFilter = searchParams.get('type') || ''
-  const powerFilter = searchParams.get('power') || ''
   const vehicleFilter = searchParams.get('vehicle') || ''
   const sort = searchParams.get('sort') || 'recent'
 
@@ -37,13 +36,6 @@ export function ProjectsPage() {
       result = result.filter((p) => p.vehicle_type === vehicleFilter)
     }
 
-    if (powerFilter) {
-      const range = POWER_RANGES[Number(powerFilter)]
-      if (range) {
-        result = result.filter((p) => p.rms_power >= range.min && p.rms_power < range.max)
-      }
-    }
-
     switch (sort) {
       case 'likes':
         result.sort((a, b) => b.likes_count - a.likes_count)
@@ -59,7 +51,7 @@ export function ProjectsPage() {
     }
 
     return result
-  }, [query, typeFilter, powerFilter, vehicleFilter, sort])
+  }, [query, typeFilter, vehicleFilter, sort])
 
   const updateParam = (key: string, value: string) => {
     const params = new URLSearchParams(searchParams)
@@ -75,7 +67,7 @@ export function ProjectsPage() {
     setSearchParams({})
   }
 
-  const hasActiveFilters = typeFilter || powerFilter || vehicleFilter || query
+  const hasActiveFilters = typeFilter || vehicleFilter || query
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-8">
@@ -145,7 +137,7 @@ export function ProjectsPage() {
             )}
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Sound Type */}
             <div className="space-y-3">
               <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
@@ -175,40 +167,6 @@ export function ProjectsPage() {
                     )}
                   >
                     {type}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Power Range */}
-            <div className="space-y-3">
-              <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                Potência RMS
-              </label>
-              <div className="flex flex-col gap-2">
-                <button
-                  onClick={() => updateParam('power', '')}
-                  className={cn(
-                    "px-3 py-1.5 text-xs font-medium border rounded-sm text-left transition-colors",
-                    !powerFilter
-                      ? "bg-primary border-primary text-primary-foreground"
-                      : "bg-transparent border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                  )}
-                >
-                  Qualquer potência
-                </button>
-                {POWER_RANGES.map((range, idx) => (
-                  <button
-                    key={idx}
-                    onClick={() => updateParam('power', String(idx))}
-                    className={cn(
-                      "px-3 py-1.5 text-xs font-medium border rounded-sm text-left transition-colors",
-                      powerFilter === String(idx)
-                        ? "bg-primary border-primary text-primary-foreground"
-                        : "bg-transparent border-border text-muted-foreground hover:border-primary/50 hover:text-foreground"
-                    )}
-                  >
-                    {range.label}
                   </button>
                 ))}
               </div>
